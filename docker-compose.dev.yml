@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+
+  nginx:
+    depends_on:
+      - api
+      - client
+    restart: always
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports:
+      - "80:80"
+
+  api:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./api
+    volumes:
+      - /app/node_modules
+      - ./api:/app
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_HOST_IP_OR_HOSTNAME: ${MYSQL_HOST_IP_OR_HOSTNAME}
+      MYSQL_PORT: ${MYSQL_PORT}
+      NODE_ENV: ${NODE_ENV}
+      EC2_PUBLIC_IP: ${EC2_PUBLIC_IP}
+      SSH_TUNNEL_CLIENT_PORT: ${SSH_TUNNEL_CLIENT_PORT}
+      SSH_USERNAME: ${SSH_USERNAME}
+      PATH_TO_SSH_PRIVATE_KEY: ${PATH_TO_SSH_PRIVATE_KEY}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
+
+  client:
+    stdin_open: true
+    environment:
+      CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING}
+      WDS_SOCKET_HOST: ${WDS_SOCKET_HOST}
+      WDS_SOCKET_PORT: ${WDS_SOCKET_PORT}
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./nginx/client
+    volumes:
+      - /app/node_modules
+      - ./nginx/client:/app
+
